@@ -1,26 +1,38 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import "typescript";
+import {codeUnCommenterCommand } from "./constants";
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+let statusBarItem: vscode.StatusBarItem;
+
+export function activate({ subscriptions }: vscode.ExtensionContext) {
 	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "code-uncommenter" is now active!');
+	subscriptions.push(vscode.commands.registerCommand(codeUnCommenterCommand, () => {
+		const editor = vscode.window.activeTextEditor;
+		const documentFileType = vscode.window.activeTextEditor?.document.languageId;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('code-uncommenter.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from code-uncommenter!');
-	});
+		if (editor) {
+			if (editor.selection.isEmpty) {
+				vscode.window.showInformationMessage("Please select text to uncomment.");
+			}
+		}
+	}))
 
-	context.subscriptions.push(disposable);
+	statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+	statusBarItem.command = codeUnCommenterCommand;
+	subscriptions.push(statusBarItem);
+
+	subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBar));
+	subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBar));
+	subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBar));
+	updateStatusBar();
+
+}
+export function updateStatusBar() : void{
+	statusBarItem.text = `$(symbol-number)`;
+	statusBarItem.tooltip = "Uncomment Code";
+	statusBarItem.show();
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	statusBarItem.dispose();
+}

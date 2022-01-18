@@ -33,9 +33,20 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 					}
 				}
 			}
+			else {
+				for (let i = 0; i < editor.selection.end.line; i++) {
+					if (editor.document.lineAt(i).text.trim() === "//" || '/*' || '*/') {
+						editor.edit((edit: { delete: (arg0: any) => void; }) => {
+							edit.delete(new vscode.Range(i, 0, i, 0));
+						});
+					}
+				}
+			}
 		}
-	}))
-
+		else {
+			vscode.window.showErrorMessage("Please open a file to uncomment.");
+		}
+	}));
 	statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 	statusBarItem.command = codeUnCommenterCommand;
 	subscriptions.push(statusBarItem);

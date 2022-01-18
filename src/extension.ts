@@ -13,6 +13,25 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 		if (editor) {
 			if (editor.selection.isEmpty) {
 				vscode.window.showInformationMessage("Please select text to uncomment.");
+				return;
+			}
+			if (documentFileType === "typescript" || "javascript") {
+				for (let i = 0; i < editor.selection.end.line; i++) {
+					if (editor.document.lineAt(i).text.trim() === "//" || '/*' || '*/') {
+						editor.edit((edit: { delete: (arg0: any) => void; }) => {
+							edit.delete(new vscode.Range(i, 0, i, 0));
+						});
+					}
+				}
+			}
+			else if (documentFileType === "python") {
+				for (let i = 0; i < editor.selection.end.line; i++) {
+					if (editor.document.lineAt(i).text.trim() === "#" || '"""') {
+						editor.edit((edit: { delete: (arg0: any) => void; }) => {
+							edit.delete(new vscode.Range(i, 0, i, 0));
+						});
+					}
+				}
 			}
 		}
 	}))
@@ -27,6 +46,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	updateStatusBar();
 
 }
+
 export function updateStatusBar() : void{
 	statusBarItem.text = `$(symbol-number)`;
 	statusBarItem.tooltip = "Uncomment Code";
